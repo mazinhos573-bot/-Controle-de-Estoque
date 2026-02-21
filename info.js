@@ -16,23 +16,23 @@ const ACCESS_CONFIG = {
       role: 'admin'
     },
     {
-      username: 'admin',
-      password: 'Admin@2025', // Senha mais forte
+      username: 'Edimar',
+      password: 'Admin@2023', // Senha mais forte
       role: 'admin'
     },
     {
-      username: 'operador1',
-      password: 'Op1@2025', // Senha única
+      username: 'T1',
+      password: 'Op1@2026', // Senha única
       role: 'operador'
     },
     {
-      username: 'operador2',
-      password: 'Op2@2025', // Senha única
+      username: 'T2',
+      password: 'Op2@2026', // Senha única
       role: 'operador'
     },
     {
-      username: 'operador3',
-      password: 'Op3@2025', // Senha única
+      username: 'T3',
+      password: 'Op3@2026', // Senha única
       role: 'operador'
     }
   ],
@@ -41,5 +41,6 @@ const ACCESS_CONFIG = {
 
   sessionTimeout: 60 * 60 * 1000 // 1 hora
 };
+
 
 export default ACCESS_CONFIG;
