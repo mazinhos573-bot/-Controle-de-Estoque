@@ -16,7 +16,7 @@ const ACCESS_CONFIG = {
       role: 'admin'
     },
     {
-      username: 'Edimar',
+      username: 'Edmar',
       password: 'Admin@2023', // Senha mais forte
       role: 'admin'
     },
@@ -44,3 +44,4 @@ const ACCESS_CONFIG = {
 
 
 export default ACCESS_CONFIG;
+
