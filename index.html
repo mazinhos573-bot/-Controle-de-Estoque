@@ -74,7 +74,7 @@
       </div>
       <div class="flex items-center gap-4">
         <span id="userGreeting" class="text-sm font-medium hidden sm:block"></span>
-        <button id="logoutBtn" class="text-sm text-red-600 hover:text-red-800 font-medium">Sair</button>
+        <button id="logoutBtn" class="text-sm text-red-500 hover:underline" data-translate="logoutBtn">Sair</button>
       </div>
     </div>
   </header>
@@ -95,6 +95,7 @@
       </div>
     </section>
 
+    <!-- As demais seções (produtos, movimentações, relatórios, qrcodes) permanecem idênticas -->
     <!-- PRODUTOS -->
     <section id="produtos" class="page-section hidden">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
@@ -154,8 +155,7 @@
   </button>
 </div>
 
-<!-- MODAIS -->
-<!-- Novo/Editar Produto -->
+<!-- MODAIS (permanece igual) -->
 <div id="productModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center hidden z-50">
   <div class="bg-white rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
     <div class="flex justify-between items-center mb-4">
@@ -166,7 +166,6 @@
       <input type="hidden" id="editId">
       <div class="space-y-4">
         <div><label class="block text-sm font-medium mb-1">Nome do produto *</label><input type="text" id="nome" required class="w-full border rounded-lg px-3 py-2"></div>
-        
         <div>
           <label class="block text-sm font-medium mb-1">Código / Código de barras</label>
           <div class="flex gap-2">
@@ -175,16 +174,13 @@
             <button type="button" id="scanBarcodeNewProduct" class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-sm">Escanear</button>
           </div>
         </div>
-
         <div><label class="block text-sm font-medium mb-1">Quantidade inicial</label><input type="number" id="quantidade" min="0" value="0" class="w-full border rounded-lg px-3 py-2"></div>
-        
         <div>
           <label class="block text-sm font-medium mb-1">Foto do produto</label>
           <input type="file" id="fotoInput" accept="image/*" capture="environment" class="w-full border rounded-lg px-3 py-2">
           <img id="fotoPreview" class="product-preview hidden" alt="Pré-visualização da foto">
           <input type="hidden" id="imagem" value="">
         </div>
-
         <div class="pt-4 border-t flex justify-end gap-3">
           <button type="button" id="closeProductModal2" class="px-4 py-2 border rounded-lg">Cancelar</button>
           <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg">Salvar</button>
@@ -194,7 +190,6 @@
   </div>
 </div>
 
-<!-- Registrar Saída -->
 <div id="saidaModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center hidden z-50">
   <div class="bg-white rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
     <div class="flex justify-between items-center mb-4">
@@ -227,7 +222,6 @@
   </div>
 </div>
 
-<!-- Scanner -->
 <div id="scannerModal" class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center hidden z-50">
   <div class="bg-white rounded-xl p-6 w-full max-w-xl relative">
     <button id="closeScanner" class="absolute top-4 right-4 text-3xl">×</button>
@@ -239,9 +233,9 @@
 </div>
 
 <script type="module">
-// import ACCESS_CONFIG from './info.js';  // ← descomente se você tiver este arquivo
+import ACCESS_CONFIG from './info.js';
 
-// Configuração Firebase (substitua se necessário)
+// Configuração Firebase (mantida igual)
 const firebaseConfig = {
   apiKey: "AIzaSyDTr6hR8jwGONeDRXa_8vPShBkw0mJVceM",
   authDomain: "contole-de-estoque-cdc.firebaseapp.com",
@@ -268,35 +262,52 @@ let chartInstance = null;
 let scannerRunning = false;
 let scannerPurpose = null; // 'newProduct' | 'saida' | 'general'
 
-// ====================== AUTENTICAÇÃO SIMPLES ======================
+// ====================== AUTENTICAÇÃO COM info.js ======================
 function checkLogin() {
   const session = localStorage.getItem('cdcSession');
-  if (!session) {
-    const username = prompt("Usuário:");
-    const password = prompt("Senha:");
-    // Aqui você pode manter sua lógica de ACCESS_CONFIG ou deixar simples para teste
-    if (username !== "admin" || password !== "123") {
-      alert("Credenciais inválidas");
-      checkLogin();
-      return;
-    }
-    currentUser = { username: username, role: "admin" };
-    localStorage.setItem('cdcSession', JSON.stringify({ username, timestamp: Date.now() }));
-  } else {
+
+  if (session) {
     const data = JSON.parse(session);
-    if (Date.now() - data.timestamp > 3600000) { // 1 hora
-      localStorage.removeItem('cdcSession');
-      location.reload();
+    if (Date.now() - data.timestamp <= ACCESS_CONFIG.sessionTimeout) {
+      currentUser = { username: data.username, role: data.role };
+      showUserGreeting();
       return;
     }
-    currentUser = { username: data.username, role: "admin" };
+    localStorage.removeItem('cdcSession');
   }
+
+  // Solicita credenciais
+  const username = prompt("Usuário:");
+  const password = prompt("Senha:");
+
+  const userFound = ACCESS_CONFIG.users.find(u => 
+    u.username === username && u.password === password
+  );
+
+  if (!userFound) {
+    alert(ACCESS_CONFIG.loginErrorMessage);
+    checkLogin(); // tenta novamente
+    return;
+  }
+
+  currentUser = { username: userFound.username, role: userFound.role };
+  localStorage.setItem('cdcSession', JSON.stringify({
+    username: currentUser.username,
+    role: currentUser.role,
+    timestamp: Date.now()
+  }));
+
+  showUserGreeting();
+}
+
+function showUserGreeting() {
   document.getElementById('userGreeting').textContent = `Olá, ${currentUser.username}`;
   document.getElementById('saidaResponsavel').value = currentUser.username;
 }
+
 checkLogin();
 
-// ====================== NAVEGAÇÃO ======================
+// ====================== NAVEGAÇÃO (sem alterações) ======================
 document.querySelectorAll('.nav-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.page-section').forEach(s => s.classList.add('hidden'));
@@ -314,7 +325,14 @@ document.getElementById('toggleSidebar').addEventListener('click', () => {
   document.getElementById('sidebar').classList.toggle('open');
 });
 
-// ====================== FIREBASE LISTENERS ======================
+document.getElementById('logoutBtn').onclick = () => {
+    localStorage.removeItem('cdcSession');
+    location.reload();
+  };
+
+// ====================== RESTANTE DO CÓDIGO (mantido idêntico) ======================
+// ... (todas as funções: onValue, generateUniqueCode, renderProdutos, updateDashboardCards, etc.)
+
 onValue(produtosRef, snap => {
   allProducts = snap.val() || {};
   renderProdutos();
@@ -331,7 +349,6 @@ onValue(movRef, snap => {
   updateDashboardCards();
 });
 
-// ====================== FUNÇÕES AUXILIARES ======================
 function generateUniqueCode() {
   let code;
   const existing = new Set(Object.values(allProducts).map(p => p.cod).filter(Boolean));
