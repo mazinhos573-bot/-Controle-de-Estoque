@@ -12,12 +12,12 @@ const ACCESS_CONFIG = {
   users: [
     {
       username: 'Ericlm',
-      password: 'Evo@1989', // Senha forte, manter em produção com criptografia
+      password: 'Evo@0101', // Senha forte, manter em produção com criptografia
       role: 'admin'
     },
     {
       username: 'Edmar',
-      password: 'Admin@2023', // Senha mais forte
+      password: 'Ed@0202', // Senha mais forte
       role: 'admin'
     },
     {
@@ -42,6 +42,4 @@ const ACCESS_CONFIG = {
   sessionTimeout: 60 * 60 * 1000 // 1 hora
 };
 
-
 export default ACCESS_CONFIG;
-
