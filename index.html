@@ -233,7 +233,7 @@
 </div>
 
 <script type="module">
-import ACCESS_CONFIG from './info.js';
+// Modo de cadastro temporário: sem login na interface.
 
 // Configuração Firebase (mantida igual)
 const firebaseConfig = {
@@ -262,49 +262,13 @@ let chartInstance = null;
 let scannerRunning = false;
 let scannerPurpose = null; // 'newProduct' | 'saida' | 'general'
 
-// ====================== AUTENTICAÇÃO COM info.js ======================
+// ====================== ACESSO TEMPORÁRIO SEM SENHA ======================
 function checkLogin() {
-  const session = localStorage.getItem('cdcSession');
-
-  if (session) {
-    const data = JSON.parse(session);
-    if (Date.now() - data.timestamp <= ACCESS_CONFIG.sessionTimeout) {
-      currentUser = { username: data.username, role: data.role };
-      showUserGreeting();
-      return;
-    }
-    localStorage.removeItem('cdcSession');
-  }
-
-  // Solicita credenciais
-  const username = prompt("Usuário:");
-  const password = prompt("Senha:");
-
-  const userFound = ACCESS_CONFIG.users.find(u => 
-    u.username === username && u.password === password
-  );
-
-  if (!userFound) {
-    alert(ACCESS_CONFIG.loginErrorMessage);
-    checkLogin(); // tenta novamente
-    return;
-  }
-
-  currentUser = { username: userFound.username, role: userFound.role };
-  localStorage.setItem('cdcSession', JSON.stringify({
-    username: currentUser.username,
-    role: currentUser.role,
-    timestamp: Date.now()
-  }));
-
-  showUserGreeting();
+  currentUser = { username: 'Cadastro', role: 'cadastro' };
+  document.getElementById('userGreeting').textContent = 'Modo cadastro';
+  document.getElementById('saidaResponsavel').value = 'Cadastro';
+  document.getElementById('logoutBtn').classList.add('hidden');
 }
-
-function showUserGreeting() {
-  document.getElementById('userGreeting').textContent = `Olá, ${currentUser.username}`;
-  document.getElementById('saidaResponsavel').value = currentUser.username;
-}
-
 checkLogin();
 
 // ====================== NAVEGAÇÃO (sem alterações) ======================
