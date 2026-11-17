@@ -538,8 +538,9 @@ document.getElementById('generateCodeBtn').addEventListener('click', () => {
   document.getElementById('cod').value = generateUniqueCode();
 });
 
-document.getElementById('productForm').addEventListener('submit', e => {
+document.getElementById('productForm').addEventListener('submit', async e => {
   e.preventDefault();
+  const btn = e.submitter || document.querySelector('#productForm button[type="submit"]');
   const id = document.getElementById('editId').value;
   const data = {
     nome: document.getElementById('nome').value.trim(),
@@ -548,27 +549,39 @@ document.getElementById('productForm').addEventListener('submit', e => {
     imagem: document.getElementById('imagem').value || null,
     ultimaAtualizacao: new Date().toISOString()
   };
-  if (!data.nome) return alert("Nome obrigatório");
-  if (!data.cod) return alert("Código obrigatório");
-
-  if (id) {
-    update(ref(db, 'produtos/' + id), data);
-  } else {
-    const newRef = push(produtosRef);
-    update(newRef, data);
-    if (data.quantidade > 0) {
-      push(movRef, {
-        tipo: 'entrada',
-        produtoId: newRef.key,
-        nome: data.nome,
-        cod: data.cod,
-        quantidade: data.quantidade,
-        responsavel: currentUser.username + " (cadastro)",
-        data: new Date().toISOString()
-      });
+  if (!data.nome) return alert('Nome obrigatório');
+  if (!data.cod) return alert('Código obrigatório');
+  btn.disabled = true;
+  btn.textContent = 'Salvando...';
+  try {
+    if (id) {
+      await update(ref(db, 'produtos/' + id), data);
+    } else {
+      const newRef = push(produtosRef);
+      await update(newRef, data);
+      if (data.quantidade > 0) {
+        try {
+          await push(movRef, {
+            tipo: 'entrada', produtoId: newRef.key, nome: data.nome,
+            cod: data.cod, quantidade: data.quantidade,
+            responsavel: currentUser.username + ' (cadastro)',
+            data: new Date().toISOString()
+          });
+        } catch (movError) {
+          alert('Produto salvo, mas não foi possível registrar a entrada: ' + movError.message);
+        }
+      }
     }
+    document.getElementById('productModal').classList.add('hidden');
+    alert('Produto salvo com sucesso!');
+  } catch (error) {
+    console.error('Falha ao salvar produto:', error);
+    alert('Não foi possível cadastrar o produto. Erro: ' + (error.code || error.message) +
+      '\\nSe aparecer PERMISSION_DENIED, é necessário ajustar as permissões do Firebase com autenticação segura.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Salvar';
   }
-  document.getElementById('productModal').classList.add('hidden');
 });
 
 // ====================== EVENTOS – SAÍDA ======================
